@@ -1,0 +1,166 @@
+
+<div class="employee-details-page">
+
+  <div class="page-header">
+    <div>
+      <h1>Employee Details</h1>
+      <p>View complete employee information.</p>
+    </div>
+
+    <div class="header-actions">
+      <a
+        *ngIf="employee"
+        [routerLink]="['/employees', employee.id, 'edit']"
+        class="edit-button"
+      >
+        Edit Employee
+      </a>
+
+      <button
+        *ngIf="employee"
+        type="button"
+        class="delete-button"
+        (click)="onDeleteEmployee()"
+        [disabled]="isDeleting"
+      >
+        {{ isDeleting ? 'Deleting...' : 'Delete Employee' }}
+      </button>
+
+      <a routerLink="/employees" class="back-button">
+        Back to Employees
+      </a>
+    </div>
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="message">
+    Loading employee details...
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+
+    <button type="button" (click)="loadEmployee()">
+      Retry
+    </button>
+  </div>
+
+  <div *ngIf="employee as emp" class="details-card">
+
+    <div class="employee-heading">
+      <div>
+        <h2>{{ emp.firstName }} {{ emp.lastName }}</h2>
+        <p>{{ emp.jobTitle || 'Job title not specified' }}</p>
+      </div>
+
+      <span
+        class="status-badge"
+        [ngClass]="emp.employmentStatus.toLowerCase()"
+      >
+        {{ emp.employmentStatus === 'ON_LEAVE'
+          ? 'ON LEAVE'
+          : emp.employmentStatus }}
+      </span>
+    </div>
+
+    <div class="details-section">
+      <h3>Personal Information</h3>
+
+      <div class="details-grid">
+        <div class="detail-item">
+          <label>Employee Code</label>
+          <span>{{ emp.employeeCode }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>Employee ID</label>
+          <span>{{ emp.id }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>First Name</label>
+          <span>{{ emp.firstName }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>Last Name</label>
+          <span>{{ emp.lastName }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>Email Address</label>
+          <span>{{ emp.email }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>Phone Number</label>
+          <span>{{ emp.phone || '-' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="details-section">
+      <h3>Employment Information</h3>
+
+      <div class="details-grid">
+        <div class="detail-item">
+          <label>Department</label>
+          <span>{{ emp.department || '-' }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>Job Title</label>
+          <span>{{ emp.jobTitle || '-' }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>Salary</label>
+          <span>
+            {{ emp.salary != null ? (emp.salary | currency:'INR':'symbol':'1.2-2') : '-' }}
+          </span>
+        </div>
+
+        <div class="detail-item">
+          <label>Hire Date</label>
+          <span>
+            {{ emp.hireDate ? (emp.hireDate | date:'dd MMM yyyy') : '-' }}
+          </span>
+        </div>
+
+        <div class="detail-item">
+          <label>Employment Status</label>
+          <span>{{ emp.employmentStatus }}</span>
+        </div>
+      </div>
+    </div>
+
+    @if (emp.employmentStatus === 'TERMINATED') {
+      <div class="details-section termination-details">
+        <h3>Termination Information</h3>
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <label>Termination Date</label>
+            <span>
+              {{ emp.terminationDate
+                ? (emp.terminationDate | date:'dd MMM yyyy')
+                : '-' }}
+            </span>
+          </div>
+
+          <div class="detail-item">
+            <label>Exit Reason</label>
+            <span class="exit-reason">
+              {{ emp.exitReason || '-' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+
+</div>

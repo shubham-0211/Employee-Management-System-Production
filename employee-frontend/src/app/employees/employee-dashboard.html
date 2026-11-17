@@ -1,0 +1,93 @@
+<div class="employee-dashboard">
+
+  <div class="page-header">
+    <div>
+      <h1>My Employee Dashboard</h1>
+      <p>View your personal employment information.</p>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="message">
+    Loading your profile...
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+
+    <button type="button" (click)="loadOwnProfile()">
+      Retry
+    </button>
+  </div>
+
+  <ng-container *ngIf="!isLoading && !errorMessage && employee">
+
+    <section class="dashboard-section">
+
+      <div class="section-heading">
+        <div>
+          <h2>Personal Information</h2>
+          <p>Your registered employee details.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <div>
+            <p>Employee Code</p>
+            <h2>{{ employee.employeeCode }}</h2>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <p>Employment Status</p>
+            <h2>
+              <span
+                class="status-badge"
+                [ngClass]="employee.employmentStatus.toLowerCase()"
+              >
+                {{ employee.employmentStatus }}
+              </span>
+            </h2>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="recent-table-container">
+        <table>
+          <tbody>
+            <tr>
+              <th>Full Name</th>
+              <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+            </tr>
+            <tr>
+              <th>Email</th>
+              <td>{{ employee.email }}</td>
+            </tr>
+            <tr>
+              <th>Phone</th>
+              <td>{{ employee.phone || '-' }}</td>
+            </tr>
+            <tr>
+              <th>Department</th>
+              <td>{{ employee.department || '-' }}</td>
+            </tr>
+            <tr>
+              <th>Job Title</th>
+              <td>{{ employee.jobTitle || '-' }}</td>
+            </tr>
+            <tr>
+              <th>Hire Date</th>
+              <td>{{ employee.hireDate || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</div>

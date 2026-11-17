@@ -1,0 +1,255 @@
+
+.employee-details-page {
+  padding: 28px;
+}
+
+/* Page Header */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.page-header h1 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: 28px;
+}
+
+.page-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.edit-button,
+.back-button,
+.delete-button {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.edit-button {
+  color: #ffffff;
+  background: #2563eb;
+  border: 1px solid #2563eb;
+}
+
+.edit-button:hover {
+  background: #1d4ed8;
+}
+
+.delete-button {
+  color: #ffffff;
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: #b91c1c;
+}
+
+.delete-button:disabled {
+  background: #fca5a5;
+  border-color: #fca5a5;
+  cursor: not-allowed;
+}
+
+.back-button {
+  border: 1px solid #2563eb;
+  color: #2563eb;
+}
+
+.back-button:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* Success Notification */
+
+.success-message {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  color: #166534;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Employee Details Card */
+
+.details-card {
+  padding: 26px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.employee-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.employee-heading h2 {
+  margin: 0 0 6px;
+  color: #1e293b;
+  font-size: 24px;
+}
+
+.employee-heading p {
+  margin: 0;
+  color: #64748b;
+}
+
+/* Employee Status */
+
+.status-badge {
+  padding: 7px 13px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge.on_leave {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.terminated {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+/* Details Sections */
+
+.details-section {
+  padding-top: 24px;
+}
+
+.details-section h3 {
+  margin: 0 0 20px;
+  color: #334155;
+  font-size: 17px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.detail-item label {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.detail-item span {
+  color: #1e293b;
+  font-size: 15px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* Loading, Empty and Error States */
+
+.message,
+.error-message {
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.message {
+  color: #64748b;
+}
+
+.error-message {
+  color: #b91c1c;
+}
+
+.error-message button {
+  margin-left: 12px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+/* Responsive Layout */
+
+@media (max-width: 768px) {
+  .employee-details-page {
+    padding: 16px;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+  }
+
+  .details-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .details-card {
+    padding: 18px;
+  }
+
+  .employee-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions a,
+  .header-actions button {
+    flex: 1;
+    text-align: center;
+  }
+}
