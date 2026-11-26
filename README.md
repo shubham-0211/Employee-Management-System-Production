@@ -1,315 +1,422 @@
 
-# Employee Management System
+# Employee Management System – EC2 Deployment Guide
 
-A full-stack Employee Management System built using Java, Spring Boot, Angular, and MySQL. The application provides employee and department management with REST APIs and a responsive web interface.
+## 1. Project Overview
 
-## Technology Stack
+Production deployment of the Employee Management System on AWS EC2.
 
-### Backend
-- Java 17
-- Spring Boot
-- Spring Data JPA
-- Hibernate
-- Maven
-- REST APIs
+| Component | Technology |
+|---|---|
+| Backend | Java 17, Spring Boot |
+| Build Tool | Maven 3.8.4 |
+| Frontend | Angular 22 |
+| Runtime | Node.js 24.22.3, npm 11.19.1 |
+| Database | MariaDB 10.5.29 |
+| Web Server | Nginx 1.30.7 |
+| Operating System | Amazon Linux 2023 |
+| Cloud | AWS EC2 |
+| Source Control | Git and GitHub |
 
-### Frontend
-- Angular 22
-- TypeScript
-- HTML5
-- CSS3
-- Angular Router
-- HttpClient
+## 2. Required Applications
 
-### Database
-- MySQL 8
+The following applications must be available on the EC2 instance:
 
-## Project Structure
+- Java 17 (Amazon Corretto)
+- Apache Maven 3.8.4
+- Node.js 24.22.3
+- npm 11.19.1
+- MariaDB 10.5.29
+- Nginx 1.30.7
+- Git
+
+No installation instructions are included in this document.
+
+## 3. Repository Structure
 
 ```text
-Employee-Management-System/
-│
-├── database/
-│   ├── schema.sql
-│   └── V1.4.0__create_departments_and_link_employees.sql
-│
-├── docs/
-│
-├── docker/
-│   ├── backend/
-│   └── frontend/
+Employee-Management-System-Production/
 │
 ├── employee-backend/
-│
 ├── employee-frontend/
+├── database/
+│   └── schema.sql
 │
-├── monitoring/
-├── terraform/
-├── .github/
-│   └── workflows/
+├── deployment/
+│   └── nginx/
+│       ├── nginx.conf
+│       └── employee-management.conf
 │
 └── README.md
 ```
 
-## Application Features
+## 4. EC2 Deployment Details
 
-### Employee Management
-- Create employees.
-- View employee details.
-- Update employee information.
-- Delete employees.
-- Validate employee information.
-- Prevent duplicate employee codes and email addresses.
-- Manage employee employment status.
-
-### Employee Directory
-- View employee records.
-- Search by employee name, email, or employee code.
-- Filter by department and employment status.
-- Paginate employee records.
-- Select page sizes of 5, 10, 20, or 50 records.
-
-### Dashboard
-- Employee management overview.
-- Employee statistics.
-- Dashboard navigation.
-
-### Department Management — v1.4.0
-- Create departments.
-- View department records.
-- Update department information.
-- Delete departments when no employees are assigned.
-- Assign employees using department IDs.
-- View employees belonging to a department.
-- Display assigned employee counts.
-- Prevent deletion of departments containing employees.
-- Support ACTIVE and INACTIVE department statuses.
-
-## Database Design
-
-The application uses a relational database structure.
-
-### Departments Table
-
-| Column | Description |
+| Setting | Value |
 |---|---|
-| id | Primary key |
-| department_code | Unique department code |
-| department_name | Department name |
-| description | Department description |
-| status | ACTIVE or INACTIVE |
-| created_at | Creation timestamp |
-| updated_at | Last update timestamp |
+| AWS Region | ap-south-1 |
+| Operating System | Amazon Linux 2023 |
+| Project Directory | /home/ec2-user/Employee-Management-System-Production |
+| Backend Port | 8080 |
+| Application Port | 80 |
+| Database | employee_management |
+| Database User | employee_app |
 
-### Employees Table
+## 5. Clone Repository
 
-| Column | Description |
-|---|---|
-| id | Primary key |
-| employee_code | Unique employee code |
-| first_name | Employee first name |
-| last_name | Employee last name |
-| email | Unique employee email |
-| phone | Contact number |
-| department_id | Foreign key referencing departments |
-| job_title | Employee designation |
-| salary | Employee salary |
-| hire_date | Joining date |
-| employment_status | Employee status |
-| created_at | Creation timestamp |
-| updated_at | Last update timestamp |
+```bash
+cd /home/ec2-user
 
-### Relationship
+git clone https://github.com/shubham-0211/Employee-Management-System-Production.git
 
-- One department can have multiple employees.
-- Each employee is associated with a department.
-- The relationship uses `employees.department_id`.
-- Department deletion is restricted when employees are assigned.
+cd Employee-Management-System-Production
+```
 
-## Prerequisites
+## 6. Database Configuration
 
-Install the following software:
+### Create Database and User
 
-| Software | Version |
-|---|---|
-| Java JDK | 17 |
-| Maven | 3.9.x |
-| Node.js | 24.x |
-| npm | 11.x |
-| Angular CLI | 22.x |
-| MySQL Server | 8.x |
+Connect to MariaDB:
 
-## Database Setup
+```bash
+sudo mariadb
+```
 
-1. Start MySQL Server.
-2. Create the application database:
+Execute:
 
 ```sql
-CREATE DATABASE employee_management;
+CREATE DATABASE IF NOT EXISTS employee_management
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'employee_app'@'localhost'
+IDENTIFIED BY 'Shubham@1999';
+
+ALTER USER 'employee_app'@'localhost'
+IDENTIFIED BY 'Shubham@1999';
+
+GRANT ALL PRIVILEGES ON employee_management.*
+TO 'employee_app'@'localhost';
+
+FLUSH PRIVILEGES;
+
+EXIT;
 ```
 
-3. Create the application database user and grant the required permissions.
-4. Execute `database/schema.sql` for a fresh database installation.
+### Import Database Schema
 
-For an existing v1.3.0 database, use the migration file:
+From the repository root:
+
+```bash
+mariadb -u employee_app -p employee_management < database/schema.sql
+```
+
+Enter the database user's password when prompted.
+
+### Verify Database Tables
+
+```bash
+mariadb -u employee_app -p employee_management
+```
+
+Execute:
+
+```sql
+SHOW TABLES;
+```
+
+Expected tables:
+
+- departments
+- employees
+- users
+
+Exit:
+
+```sql
+EXIT;
+```
+
+## 7. Backend Configuration
+
+Configuration file:
 
 ```text
-database/V1.4.0__create_departments_and_link_employees.sql
+employee-backend/src/main/resources/application.properties
 ```
 
-Do not execute the fresh-install schema as a migration against an existing database.
+This file contains:
 
-## Backend Setup
+- Database connection settings
+- JPA configuration
+- Actuator configuration
+- JWT secret and expiration
+- Initial administrator bootstrap settings
 
-Open PowerShell:
+Important settings:
 
-```powershell
-Set-Location "employee-backend"
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/employee_management
+spring.datasource.username=employee_app
+spring.jpa.hibernate.ddl-auto=validate
+
+app.jwt.expiration-ms=900000
+
+app.admin.bootstrap-enabled=false
 ```
 
-Set the database password:
+The complete configuration is maintained in the repository.
 
-```powershell
-$env:DB_PASSWORD = Read-Host "Enter your MySQL password"
+### Build Backend
+
+```bash
+cd employee-backend
+
+mvn clean package -DskipTests
 ```
 
-Start the backend:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-Backend URL:
+Generated JAR:
 
 ```text
-http://localhost:8080
+target/employee-backend-0.0.1-SNAPSHOT.jar
 ```
 
-Build and verify:
+### Start Backend
 
-```powershell
-.\mvnw.cmd clean verify
+```bash
+java -jar target/employee-backend-0.0.1-SNAPSHOT.jar
 ```
 
-## Frontend Setup
+Keep the terminal running.
 
-Open another PowerShell terminal:
+### Verify Backend
 
-```powershell
-Set-Location "employee-frontend"
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+Expected result:
+
+```json
+{"groups":["liveness","readiness"],"status":"UP"}
+```
+
+## 8. Frontend Build
+
+Open another SSH terminal.
+
+Navigate to:
+
+```bash
+cd /home/ec2-user/Employee-Management-System-Production/employee-frontend
 ```
 
 Install dependencies:
 
-```powershell
-npm.cmd install
+```bash
+npm ci
 ```
 
-Start Angular:
+Build Angular:
 
-```powershell
-npm.cmd start
+```bash
+npm run build
 ```
 
-Frontend URL:
+Angular browser output:
 
 ```text
-http://localhost:4200
+dist/employee-frontend/browser
 ```
 
-Build frontend:
-
-```powershell
-npm.cmd run build
-```
-
-## REST API
-
-Base URL:
+The main entry file is:
 
 ```text
-http://localhost:8080/api
+index.csr.html
 ```
 
-### Employee APIs
+Nginx serves these static browser files. Angular SSR is not used.
 
-| Method | Endpoint | Description |
+## 9. Nginx Configuration
+
+The repository contains two Nginx configuration files.
+
+| Repository File | EC2 Destination |
+|---|---|
+| deployment/nginx/nginx.conf | /etc/nginx/nginx.conf |
+| deployment/nginx/employee-management.conf | /etc/nginx/conf.d/employee-management.conf |
+
+### Copy Configuration Files
+
+Run from the repository root:
+
+```bash
+sudo cp deployment/nginx/nginx.conf /etc/nginx/nginx.conf
+
+sudo cp deployment/nginx/employee-management.conf /etc/nginx/conf.d/employee-management.conf
+```
+
+### Modify Configuration Files
+
+Main configuration:
+
+```bash
+sudo vi /etc/nginx/nginx.conf
+```
+
+EMS application configuration:
+
+```bash
+sudo vi /etc/nginx/conf.d/employee-management.conf
+```
+
+### Nginx Configuration Responsibilities
+
+**nginx.conf**
+- Main Nginx configuration.
+- Worker process settings.
+- Logging settings.
+- Includes application configurations from conf.d.
+
+**employee-management.conf**
+- Serves Angular frontend.
+- Routes `/api/` requests to Spring Boot.
+- Routes `/actuator/` requests to Spring Boot.
+- Uses port 80 for HTTP traffic.
+
+### Set Directory Permission
+
+Allow Nginx to access the application files:
+
+```bash
+sudo chmod 711 /home/ec2-user
+```
+
+### Test and Reload Nginx
+
+```bash
+sudo nginx -t
+```
+
+If the configuration test succeeds:
+
+```bash
+sudo systemctl reload nginx
+```
+
+Check Nginx status:
+
+```bash
+sudo systemctl status nginx
+```
+
+## 10. AWS Security Group
+
+Configure the following inbound rules:
+
+| Port | Service | Access |
 |---|---|---|
-| GET | `/employees` | Get employees |
-| GET | `/employees/{id}` | Get employee by ID |
-| GET | `/employees/department/{departmentId}` | Get employees by department |
-| POST | `/employees` | Create employee |
-| PUT | `/employees/{id}` | Update employee |
-| DELETE | `/employees/{id}` | Delete employee |
+| 22 | SSH | Administrator IP |
+| 80 | HTTP | Intended application users |
+| 8080 | Spring Boot | Not publicly exposed |
+| 3306 | MariaDB | Not publicly exposed |
 
-### Department APIs
+## 11. Final Application Verification
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/departments` | Get all departments |
-| GET | `/departments/{id}` | Get department by ID |
-| POST | `/departments` | Create department |
-| PUT | `/departments/{id}` | Update department |
-| DELETE | `/departments/{id}` | Delete department |
+### Verify Frontend
 
-## Application Routes
-
-| Route | Description |
-|---|---|
-| `/` | HR Management Overview |
-| `/employees` | Employee Management Dashboard |
-| `/employees/directory` | Employee Directory |
-| `/employees/new` | Add Employee |
-| `/employees/:id` | Employee Details |
-| `/employees/:id/edit` | Edit Employee |
-| `/departments` | Department Management |
-| `/departments/:id/employees` | Department Employees |
-
-## Configuration
-
-Database configuration is managed through environment variables.
-
-| Variable | Description |
-|---|---|
-| `DB_URL` | MySQL connection URL |
-| `DB_PASSWORD` | MySQL application user password |
-
-Default database URL:
-
-```text
-jdbc:mysql://localhost:3306/employee_management
+```bash
+curl -I http://localhost
 ```
 
-Never commit database passwords, credentials, or environment-specific secrets to GitHub.
+Expected HTTP response:
 
-## Version History
+```text
+HTTP/1.1 200 OK
+```
 
-| Version | Features |
-|---|---|
-| v1.0.0 | Employee creation and basic management |
-| v1.1.0 | Employee details and validation |
-| v1.2.0 | Employee update, deletion, and dashboard |
-| v1.3.0 | Employee directory, search, filtering, and pagination |
-| v1.4.0 | Department management and employee-department relationship |
+### Verify Backend Through Nginx
 
-## Development Roadmap
+```bash
+curl http://localhost/actuator/health
+```
 
-Planned improvements:
+Expected:
 
-- Automated backend and frontend testing.
-- Docker-based application deployment.
-- Jenkins CI pipeline.
-- GitHub Actions CI workflows.
-- GitHub Container Registry integration.
-- AWS infrastructure using Terraform.
-- Application monitoring and centralized logging.
-- Database backup and recovery automation.
-- Deployment documentation for Windows and Linux environments.
+```json
+{"groups":["liveness","readiness"],"status":"UP"}
+```
 
-## Important Notes
+### Verify in Browser
 
-- Hibernate schema management is configured with `ddl-auto=validate`.
-- Database structure changes must be handled through explicit SQL migrations.
-- Keep database backups outside the Git repository.
-- Validate backend APIs and frontend integration before creating a release.
-- Version tags should be created only after successful end-to-end testing.
+Open:
+
+```text
+http://<EC2-PUBLIC-IP>
+```
+
+The EMS login page should appear.
+
+Log in using the configured administrator account.
+
+## 12. Future Deployment Updates
+
+After making changes and pushing them to GitHub, update EC2:
+
+```bash
+cd /home/ec2-user/Employee-Management-System-Production
+
+git pull origin main
+```
+
+### Rebuild Backend
+
+```bash
+cd employee-backend
+
+mvn clean package -DskipTests
+```
+
+Stop the currently running backend process and start the newly built JAR:
+
+```bash
+java -jar target/employee-backend-0.0.1-SNAPSHOT.jar
+```
+
+### Rebuild Frontend
+
+In another terminal:
+
+```bash
+cd /home/ec2-user/Employee-Management-System-Production/employee-frontend
+
+npm ci
+
+npm run build
+```
+
+### Apply Nginx Changes
+
+Only when Nginx configuration changes:
+
+```bash
+cd /home/ec2-user/Employee-Management-System-Production
+
+sudo cp deployment/nginx/nginx.conf /etc/nginx/nginx.conf
+
+sudo cp deployment/nginx/employee-management.conf /etc/nginx/conf.d/employee-management.conf
+
+sudo nginx -t
+
+sudo systemctl reload nginx
+```
+
+## 13. Important Deployment Notes
+
+- Backend currently runs manually using `java -jar`.
+- No systemd service is configured for Spring Boot.
+- Backend must be started manually after a reboot or process termination.
+- Nginx serves Angular static files.
+- Backend APIs are accessed through Nginx reverse proxy.
+- Current deployment uses HTTP on port 80.
+- HTTPS is not configured.
+- MariaDB and Spring Boot backend ports should not be publicly exposed.
