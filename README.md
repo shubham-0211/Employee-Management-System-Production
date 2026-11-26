@@ -11,7 +11,7 @@ Production deployment of the Employee Management System on AWS EC2.
 | Build Tool | Maven 3.8.4 |
 | Frontend | Angular 22 |
 | Runtime | Node.js 24.22.3, npm 11.19.1 |
-| Database | MariaDB 10.5.29 |
+| Database | MySQL 8.0.46 |
 | Web Server | Nginx 1.30.7 |
 | Operating System | Amazon Linux 2023 |
 | Cloud | AWS EC2 |
@@ -25,7 +25,7 @@ The following applications must be available on the EC2 instance:
 - Apache Maven 3.8.4
 - Node.js 24.22.3
 - npm 11.19.1
-- MariaDB 10.5.29
+- MySQL 8.0.46
 - Nginx 1.30.7
 - Git
 
@@ -75,10 +75,10 @@ cd Employee-Management-System-Production
 
 ### Create Database and User
 
-Connect to MariaDB:
+Connect to MySQL:
 
 ```bash
-sudo mariadb
+sudo mysql
 ```
 
 Execute:
@@ -107,7 +107,7 @@ EXIT;
 From the repository root:
 
 ```bash
-mariadb -u employee_app -p employee_management < database/schema.sql
+mysql -u employee_app -p employee_management < database/schema.sql
 ```
 
 Enter the database user's password when prompted.
@@ -115,7 +115,7 @@ Enter the database user's password when prompted.
 ### Verify Database Tables
 
 ```bash
-mariadb -u employee_app -p employee_management
+mysql -u employee_app -p employee_management
 ```
 
 Execute:
@@ -272,12 +272,14 @@ sudo vi /etc/nginx/conf.d/employee-management.conf
 ### Nginx Configuration Responsibilities
 
 **nginx.conf**
+
 - Main Nginx configuration.
 - Worker process settings.
 - Logging settings.
 - Includes application configurations from conf.d.
 
 **employee-management.conf**
+
 - Serves Angular frontend.
 - Routes `/api/` requests to Spring Boot.
 - Routes `/actuator/` requests to Spring Boot.
@@ -318,7 +320,7 @@ Configure the following inbound rules:
 | 22 | SSH | Administrator IP |
 | 80 | HTTP | Intended application users |
 | 8080 | Spring Boot | Not publicly exposed |
-| 3306 | MariaDB | Not publicly exposed |
+| 3306 | MySQL | Not publicly exposed |
 
 ## 11. Final Application Verification
 
@@ -419,4 +421,4 @@ sudo systemctl reload nginx
 - Backend APIs are accessed through Nginx reverse proxy.
 - Current deployment uses HTTP on port 80.
 - HTTPS is not configured.
-- MariaDB and Spring Boot backend ports should not be publicly exposed.
+- MySQL and Spring Boot backend ports should not be publicly exposed.
